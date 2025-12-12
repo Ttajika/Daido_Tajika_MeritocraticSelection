@@ -149,9 +149,9 @@ def simulate_one_path(num_periods, team_size, grid_size, params):
     # サポート A: とりあえず均等格子。ランダムにしたければ np.sort(np.random.rand(K))
     A = np.sort(np.random.rand(K))
 
-
-    # 下位のバイアス分布 G ~ Dirichlet(1,...,1)
-    sub_dist = np.random.dirichlet(alpha=np.ones(K))
+    P1pr = [random.random() for j in range(K)]
+    sP1 = sum(P1pr)
+    sub_dist = [P1pr[i]/sP1 for i in range(K)]
 
     manager_dists = []
     performances = []
@@ -306,7 +306,7 @@ with st.expander("Model Parameters", expanded=False):
     st.write("Noise distribution parameters: follows N(μ, σ²)")
     cole, colf = st.columns(2)
     with cole:
-        σ = st.number_input("σ", min_value=0.01, max_value=1.0, value=1.0, step=0.01)
+        σ = st.number_input("σ", min_value=0.01, max_value=1.0, value=.05, step=0.01)
     with colf:
         θ = st.number_input("μ", min_value=0.0, max_value=1.0, value=0.0, step=0.01)
     # 将来拡張しやすいよう dict にまとめて渡す

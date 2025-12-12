@@ -8,11 +8,19 @@ from scipy.stats import norm
 
 # =========================================================
 
-def PHI(es,em, γs=0.05, γm=0.05, γms=1.0):
+def PHI(es,em, params):
+    γs=params["γs"]
+    γm=params["γm"]
+    γms=params["γms"]
+    ζ=params["ζ"]
     value = (-1)*γs*((es)**2)/2+γms*(1-es)*(1-em)-γm*((em)**2)/2
     return value
 
-def util(e, ζ=1.0):
+def util(e, params):
+    γs=params["γs"]
+    γm=params["γm"]
+    γms=params["γms"]
+    ζ=params["ζ"]
     value = ζ*(e-e**2/2)
     return value
 
@@ -44,7 +52,7 @@ def X1_matrix(A, params):
     e_m = eM_vec(A, params)         # (k,)
     ES = e_s[np.newaxis, :]  # shape (1,k) -> subordinate type j
     EM = e_m[:, np.newaxis]  # shape (k,1) -> manager type i
-    return PHI(ES, EM) + util(ES)  # broadcastingで (k,k)
+    return PHI(ES, EM, params) + util(ES, params)  # broadcastingで (k,k)
 
 def Total_profit(P, hP, A, params):
     P = np.asarray(P)

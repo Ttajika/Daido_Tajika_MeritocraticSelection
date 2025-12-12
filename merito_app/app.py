@@ -311,10 +311,10 @@ with st.expander("Model Parameters", expanded=False):
     with cold:
         γs = st.number_input("η_s", min_value=0.01, max_value=1.0, value=0.05, step=0.01)
     
-    st.write("Noise distribution parameters: follows N(μ, σ²)")
+    st.write("Noise distribution (dist. of θ) parameters: follows N(μ, σ²)")
     cole, colf = st.columns(2)
     with cole:
-        σ = st.number_input("σ", min_value=0.01, max_value=1.0, value=.05, step=0.01)
+        σ = st.number_input("σ", min_value=0.01, max_value=1.0, value=.01, step=0.01)
     with colf:
         θ = st.number_input("μ", min_value=0.0, max_value=1.0, value=0.0, step=0.01)
     # 将来拡張しやすいよう dict にまとめて渡す

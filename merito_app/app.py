@@ -104,6 +104,12 @@ def compute_Gamma_matrix(P, A, n, params,
         # 台形公式で積分して Gamma_mat[m, :]
         Gamma_mat[m, :] = np.trapezoid(integrand, pi_grid, axis=0)
 
+    row_sums = Gamma_mat.sum(axis=1, keepdims=True)
+    Gamma_mat = np.divide(Gamma_mat, row_sums,
+                      out=np.zeros_like(Gamma_mat),
+                      where=row_sums > 0)
+
+
     return Gamma_mat
 
 def updated_distribution(hP, Gamma_mat):
@@ -305,7 +311,7 @@ with st.expander("Model Parameters", expanded=False):
     with cola:
         ζ = st.number_input("ζ", min_value=0.01, max_value=1.0, value=1.0, step=0.01)
     with colb:
-        γms = st.number_input("η_ms", min_value=0.01, max_value=1.0, value=1.0, step=0.01)
+        γms = st.number_input("η_ms", min_value=-1.0, max_value=1.0, value=1.0, step=0.01)
     with colc:
         γm = st.number_input("η_m", min_value=0.01, max_value=1.0, value=0.05, step=0.01)
     with cold:

@@ -64,7 +64,7 @@ def Total_profit(P, hP, A, params):
     
 
 def compute_Gamma_matrix(P, A, n, params,
-                         n_grid=400, L=6):
+                         n_grid=1000, L=6):
     """
     manager type = A[i] （行）
     subordinate type = A[j] （列）の遷移行列 Gamma_mat[i,j]
@@ -159,9 +159,13 @@ def simulate_one_path(num_periods, team_size, grid_size, params):
       performances: shape (num_periods+1,)
     """
     K = grid_size
-
-    # サポート A: とりあえず均等格子。ランダムにしたければ np.sort(np.random.rand(K))
-    A = np.sort(np.random.rand(K))
+    max_alpha = params["max_alpha"]
+    min_alpha = params["min_alpha"]
+    #Supp(G) の生成
+    if params["method_supp"] == "uniformly drawn grid":
+        A = np.linspace(min_alpha, max_alpha, K)
+    else:  # randomly drawn grid
+        A = np.sort((max_alpha-min_alpha)*np.random.rand(K)+min_alpha)  # 0 除けるために少しずらす
 
     P1pr = [random.random() for j in range(K)]
     sP1 = sum(P1pr)
@@ -323,6 +327,15 @@ with st.expander("Model Parameters", expanded=False):
         σ = st.number_input("σ", min_value=0.01, max_value=1.0, value=.01, step=0.01)
     with colf:
         θ = st.number_input("μ", min_value=0.0, max_value=1.0, value=0.0, step=0.01)
+
+    st.write("maximum and minimum of supp(G)")
+    colg, cole, colf = st.columns(3)
+    with colg:
+        method_supp = st.selectbox("Select method of supp(A)", ["randomly drawn grid", "uniform grid"])
+    with cole:
+        max_alpha = st.number_input("max_alpha", min_value=0.01, max_value=1.0, value=1.0, step=0.01)
+    with colf:
+        min_alpha = st.number_input("min_alpha", min_value=0.0, max_value=max_alpha, value=0.01, step=0.01)
     # 将来拡張しやすいよう dict にまとめて渡す
     params = {
         "γs": γs,
@@ -331,6 +344,9 @@ with st.expander("Model Parameters", expanded=False):
         "ζ": ζ,
         "σ": σ,
         "θ": θ,
+        "max_alpha": max_alpha,
+        "min_alpha": min_alpha,
+        "method_supp": method_supp,
     }
 
 # ---- メイン設定（常に見える） ----

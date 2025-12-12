@@ -358,7 +358,7 @@ with col1:
 with col2:
     num_periods = st.number_input("periods", min_value=1, max_value=200, value=10, step=1)
 with col3:
-    grid_size = st.number_input("size of supp(G)", min_value=3, max_value=300, value=50, step=1)
+    grid_size = st.number_input("size of supp(G)", min_value=3, max_value=300, value=10, step=1)
 with col4:
     num_sims = st.number_input("number of simulation", min_value=10, max_value=2000, value=300, step=10)
 

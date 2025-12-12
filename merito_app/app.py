@@ -163,7 +163,12 @@ def simulate_one_path(num_periods, team_size, grid_size, params):
 
     manager_dists = []
     performances = []
-
+    Gamma_mat = compute_Gamma_matrix(
+            sub_dist,
+            A,
+            n=team_size,
+            params=params,
+        )
     # 初期 manager 分布は G と同じにしておく
     manager_dist = sub_dist.copy()
 
@@ -172,12 +177,7 @@ def simulate_one_path(num_periods, team_size, grid_size, params):
         performances.append(Total_profit(sub_dist, manager_dist, A, params))
 
         # 次期の manager 分布を計算（最後の期では使われないがそのまま更新）
-        Gamma_mat = compute_Gamma_matrix(
-            sub_dist,
-            A,
-            n=team_size,
-            params=params,
-        )
+
         manager_dist = updated_distribution(manager_dist, Gamma_mat)
 
     return A, sub_dist, np.array(manager_dists), np.array(performances)

@@ -59,7 +59,7 @@ def Total_profit(P, hP, A, params):
     hP = np.asarray(hP)
     A = np.array(A)
     e_m = eM_vec(A, params)
-    Profit = hP @ util(e_m).T+ hP @ X1_matrix(A, params) @ P.T
+    Profit = hP @ util(e_m, params).T+ hP @ X1_matrix(A, params) @ P.T
     return float(Profit)
     
 

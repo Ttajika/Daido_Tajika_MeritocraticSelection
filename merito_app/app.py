@@ -289,7 +289,7 @@ st.markdown(
 # ---- 高度なパラメータ（トグルで隠す） ----
 with st.expander("Model Parameters", expanded=False):
     st.write("Model parameters: We consider the following effort-performance function")
-    s1 = r"""v(e_s, e_m) = -\eta_s e_s^2 + \eta_{ms} (1 - e_s)(1 - e_m) - \eta_m e_m^2"""
+    s1 = r"""v(e_s, e_m) = -\eta_s e_s^2/2 + \eta_{ms} (1 - e_s)(1 - e_m) - \eta_m e_m^2/2"""
     st.latex(s1)
     s2 = r"""u(e) = \zeta \left( e - \frac{e^2}{2} \right)"""
     st.latex(s2 )
@@ -330,7 +330,7 @@ with col2:
 with col3:
     grid_size = st.number_input("size of supp(G)", min_value=3, max_value=300, value=50, step=1)
 with col4:
-    num_sims = st.number_input("size of simulation", min_value=10, max_value=2000, value=300, step=10)
+    num_sims = st.number_input("number of simulation", min_value=10, max_value=2000, value=300, step=10)
 
 if "results" not in st.session_state:
     st.session_state.results = None
@@ -400,8 +400,6 @@ if st.session_state.results is not None:
             ax.scatter(oth_x, oth_y, s = 1, label="No FOSD relation")
     elif x_choice == "Δvar bias vs ΔPerformance":
         ax.set_xlabel("Change rate in variance of managerial bias")
-        ax.set_ylabel("Change rate in overall performance")
-        ax.set_xlabel("Change rate in mean managerial bias")
         ax.set_ylabel("Change rate in overall performance")
         if inc_z.size > 0:
             ax.scatter(inc_z, inc_y, s = 1, label="FOSD increase")

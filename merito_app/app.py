@@ -331,7 +331,7 @@ with st.expander("Model Parameters", expanded=False):
     st.write("maximum and minimum of supp(G)")
     colg, cole, colf = st.columns(3)
     with colg:
-        method_supp = st.selectbox("Select method of supp(A)", ["randomly drawn grid", "uniform grid"])
+        method_supp = st.selectbox("Grid type for supp(G)", ["randomly drawn grid", "uniform grid"])
     with cole:
         max_alpha = st.number_input("max_alpha", min_value=0.01, max_value=1.0, value=1.0, step=0.01)
     with colf:
@@ -358,7 +358,7 @@ with col1:
 with col2:
     num_periods = st.number_input("periods", min_value=1, max_value=200, value=10, step=1)
 with col3:
-    grid_size = st.number_input("size of supp(G)", min_value=3, max_value=300, value=10, step=1)
+    grid_size = st.number_input("grid size of supp(G)", min_value=3, max_value=300, value=10, step=1)
 with col4:
     num_sims = st.number_input("number of simulation", min_value=10, max_value=2000, value=300, step=10)
 
@@ -382,20 +382,20 @@ if run_button:
 
 # ---- 結果の可視化 ----
 if st.session_state.results is not None:
-    st.subheader("Visualization of Dynamics by 2 period Change Rates")
+    st.subheader("Visualization of Dynamics by 2-period Change Rates")
 
     max_T = st.session_state.num_periods
 
     col_t1, col_t2 = st.columns(2)
     with col_t1:
-        t_from = st.number_input("period t (base)", min_value=0, max_value=max_T - 1, value=0, step=1)
+        t_from = st.number_input("period t (baseline)", min_value=0, max_value=max_T - 1, value=0, step=1)
     with col_t2:
-        t_to = st.number_input("period s (comparizon)", min_value=t_from + 1, max_value=max_T, value=min(5, max_T), step=1)
+        t_to = st.number_input("period s (comparison)", min_value=t_from + 1, max_value=max_T, value=min(5, max_T), step=1)
     
-    x_choice = st.radio("Comparizon", ["Δmean bias vs ΔPerformance", "Δvar bias vs ΔPerformance", "Δmean bias vs Δvar bias"], horizontal=True)
+    x_choice = st.radio("Variables to plot", ["Δmean bias vs ΔPerformance", "Δvar bias vs ΔPerformance", "Δmean bias vs Δvar bias"], horizontal=True)
 
 
-    show_reg = st.checkbox("Show regression lines for each FOSD group", value=True)
+    show_reg = st.checkbox("Display regression lines by FOSD group", value=True)
 
     groups = compute_scatter_data(st.session_state.results, t_from, t_to)
 

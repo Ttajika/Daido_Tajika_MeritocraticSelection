@@ -457,7 +457,7 @@ if st.session_state.results is not None:
             
         if oth_x.size > 0:
             ax.scatter(oth_x, oth_z, s = 1, label="No FOSD order")   
-    ax.set_title(f"{t_to}-period change (t={t_from} → {t_to}), n={team_size}, supp(G)={grid_size}")
+    ax.set_title(f"{t_to-t_from}-period change (t={t_from} → {t_to}), n={team_size}, |supp(G)|={grid_size}")
 
 
     

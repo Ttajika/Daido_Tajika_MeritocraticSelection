@@ -298,15 +298,14 @@ def add_regression(ax, xs, ys, label_suffix=""):
 
 st.title("Dynamics of Coordination-Neglect Bias in OLG Organizations")
 st.markdown(
-    r'''This app simulates the dynamics of managerial bias distributions in an overlapping generations (OLG) organization model, following the framework described in the paper, _"Meritocratic Selection and Dynamics of Coordination Neglect in Hierarchical Organizations"_ by Kohei Daido and Tomoya Tajika.''')
+    r'''This app simulates the dynamics of managerial bias distributions in an overlapping-generations (OLG) organization, following _"Meritocratic Selection and Dynamics of Coordination Neglect in Hierarchical Organizations"_ by Kohei Daido and Tomoya Tajika.''')
 st.markdown(
-    r''' 
-    Users can adjust model parameters, run simulations, and visualize how changes in managerial bias distributions affect overall organizational performance.'''
+    r'''Use the controls below to tune the model, run simulations, and visualize how shifts in managerial bias distributions shape overall organizational performance.'''
 )
 
 # ---- 高度なパラメータ（トグルで隠す） ----
 with st.expander("Model Parameters", expanded=False):
-    st.write("Model parameters: We consider the following effort-performance function")
+    st.write("Effort-performance functions")
     s1 = r"""v(e_s, e_m) = -\eta_s e_s^2/2 + \eta_{ms} (1 - e_s)(1 - e_m) - \eta_m e_m^2/2"""
     st.latex(s1)
     s2 = r"""u(e) = \zeta \left( e - \frac{e^2}{2} \right)"""
@@ -321,21 +320,21 @@ with st.expander("Model Parameters", expanded=False):
     with cold:
         γs = st.number_input("η_s", min_value=0.01, max_value=1.0, value=0.05, step=0.01)
     
-    st.write("Noise distribution (dist. of θ) parameters: follows N(μ, σ²)")
+    st.write("Noise distribution for θ (assumed N(μ, σ²))")
     cole, colf = st.columns(2)
     with cole:
         σ = st.number_input("σ", min_value=0.01, max_value=1.0, value=.01, step=0.01)
     with colf:
         θ = st.number_input("μ", min_value=0.0, max_value=1.0, value=0.0, step=0.01)
 
-    st.write("maximum and minimum of supp(G)")
+    st.write("Support bounds for G")
     colg, cole, colf = st.columns(3)
     with colg:
-        method_supp = st.selectbox("Grid type for supp(G)", ["randomly drawn grid", "uniform grid"])
+        method_supp = st.selectbox("Support grid type for G", ["randomly drawn grid", "uniform grid"])
     with cole:
-        max_alpha = st.number_input("max_alpha", min_value=0.01, max_value=1.0, value=1.0, step=0.01)
+        max_alpha = st.number_input("Max alpha", min_value=0.01, max_value=1.0, value=1.0, step=0.01)
     with colf:
-        min_alpha = st.number_input("min_alpha", min_value=0.0, max_value=max_alpha, value=0.01, step=0.01)
+        min_alpha = st.number_input("Min alpha", min_value=0.0, max_value=max_alpha, value=0.01, step=0.01)
     # 将来拡張しやすいよう dict にまとめて渡す
     params = {
         "γs": γs,
@@ -350,17 +349,17 @@ with st.expander("Model Parameters", expanded=False):
     }
 
 # ---- メイン設定（常に見える） ----
-st.subheader("Main Settings for Simulation")
+st.subheader("Core Simulation Settings")
 
 col1, col2, col3, col4 = st.columns(4)
 with col1:
-    team_size = st.number_input("team size (n)", min_value=2, max_value=10_000, value=50, step=1)
+    team_size = st.number_input("Team size (n)", min_value=2, max_value=10_000, value=50, step=1)
 with col2:
-    num_periods = st.number_input("periods", min_value=1, max_value=200, value=10, step=1)
+    num_periods = st.number_input("Number of periods", min_value=1, max_value=200, value=10, step=1)
 with col3:
-    grid_size = st.number_input("grid size of supp(G)", min_value=3, max_value=300, value=10, step=1)
+    grid_size = st.number_input("Support grid size for G", min_value=3, max_value=300, value=10, step=1)
 with col4:
-    num_sims = st.number_input("number of simulation", min_value=10, max_value=2000, value=300, step=10)
+    num_sims = st.number_input("Number of simulations", min_value=10, max_value=2000, value=300, step=10)
 
 if "results" not in st.session_state:
     st.session_state.results = None
@@ -382,17 +381,17 @@ if run_button:
 
 # ---- 結果の可視化 ----
 if st.session_state.results is not None:
-    st.subheader("Visualization of Dynamics by 2-period Change Rates")
+    st.subheader("Two-Period Change Visualization")
 
     max_T = st.session_state.num_periods
 
     col_t1, col_t2 = st.columns(2)
     with col_t1:
-        t_from = st.number_input("period t (baseline)", min_value=0, max_value=max_T - 1, value=0, step=1)
+        t_from = st.number_input("Baseline period t", min_value=0, max_value=max_T - 1, value=0, step=1)
     with col_t2:
-        t_to = st.number_input("period s (comparison)", min_value=t_from + 1, max_value=max_T, value=min(5, max_T), step=1)
+        t_to = st.number_input("Comparison period s", min_value=t_from + 1, max_value=max_T, value=min(5, max_T), step=1)
     
-    x_choice = st.radio("Variables to plot", ["Δmean bias vs ΔPerformance", "Δvar bias vs ΔPerformance", "Δmean bias vs Δvar bias"], horizontal=True)
+    x_choice = st.radio("Variables to plot", ["Δ mean bias vs Δ performance", "Δ variance vs Δ performance", "Δ mean bias vs Δ variance"], horizontal=True)
 
 
     show_reg = st.checkbox("Display regression lines by FOSD group", value=True)
@@ -401,9 +400,9 @@ if st.session_state.results is not None:
 
     # 件数の表示
     st.write(
-        f"FOSD increase: {groups['inc'][0].size}, "
-        f"decrease: {groups['dec'][0].size}, "
-        f"No FOSD relation: {groups['oth'][0].size}"
+        f"FOSD (bias rising): {groups['inc'][0].size}, "
+        f"FOSD (bias falling): {groups['dec'][0].size}, "
+        f"No FOSD order: {groups['oth'][0].size}"
     )
 
 
@@ -413,52 +412,52 @@ if st.session_state.results is not None:
 
 
     fig, ax = plt.subplots()
-    if x_choice == "Δmean bias vs ΔPerformance":
-        ax.set_xlabel("Change rate in mean managerial bias")
-        ax.set_ylabel("Change rate in overall performance")
+    if x_choice == "Δ mean bias vs Δ performance":
+        ax.set_xlabel("Percent change in mean managerial bias")
+        ax.set_ylabel("Percent change in overall performance")
         if inc_x.size > 0:
-            ax.scatter(inc_x, inc_y, s = 1, label="FOSD increase")
+            ax.scatter(inc_x, inc_y, s = 1, label="FOSD (bias rising)")
         if show_reg:
             add_regression(ax, inc_x, inc_y, label_suffix=" (increase)")
 
         if dec_x.size > 0:
-            ax.scatter(dec_x, dec_y, s = 1, label="FOSD decrease")
+            ax.scatter(dec_x, dec_y, s = 1, label="FOSD (bias falling)")
         if show_reg:
             add_regression(ax, dec_x, dec_y, label_suffix=" (decrease)")
 
         if oth_x.size > 0:
-            ax.scatter(oth_x, oth_y, s = 1, label="No FOSD relation")
-    elif x_choice == "Δvar bias vs ΔPerformance":
-        ax.set_xlabel("Change rate in variance of managerial bias")
-        ax.set_ylabel("Change rate in overall performance")
+            ax.scatter(oth_x, oth_y, s = 1, label="No FOSD order")
+    elif x_choice == "Δ variance vs Δ performance":
+        ax.set_xlabel("Percent change in the variance of managerial bias")
+        ax.set_ylabel("Percent change in overall performance")
         if inc_z.size > 0:
-            ax.scatter(inc_z, inc_y, s = 1, label="FOSD increase")
+            ax.scatter(inc_z, inc_y, s = 1, label="FOSD (bias rising)")
         if show_reg:
             add_regression(ax, inc_z, inc_y, label_suffix=" (increase)")
 
         if dec_z.size > 0:
-            ax.scatter(dec_z, dec_y, s = 1, label="FOSD decrease")
+            ax.scatter(dec_z, dec_y, s = 1, label="FOSD (bias falling)")
         if show_reg:
             add_regression(ax, dec_z, dec_y, label_suffix=" (decrease)")
             
         if oth_z.size > 0:
-            ax.scatter(oth_z, oth_y, s = 1, label="No FOSD relation")        
+            ax.scatter(oth_z, oth_y, s = 1, label="No FOSD order")        
     else:  # Δmean bias vs Δvar bias
-        ax.set_xlabel("Change rate in mean managerial bias")
-        ax.set_ylabel("Change rate in variance of managerial bias")
+        ax.set_xlabel("Percent change in mean managerial bias")
+        ax.set_ylabel("Percent change in the variance of managerial bias")
         if inc_x.size > 0:
-            ax.scatter(inc_x, inc_z, s = 1, label="FOSD increase")
+            ax.scatter(inc_x, inc_z, s = 1, label="FOSD (bias rising)")
         if show_reg:
             add_regression(ax, inc_x, inc_z, label_suffix=" (increase)")
 
         if dec_x.size > 0:
-            ax.scatter(dec_x, dec_z, s = 1, label="FOSD decrease")
+            ax.scatter(dec_x, dec_z, s = 1, label="FOSD (bias falling)")
         if show_reg:
             add_regression(ax, dec_x, dec_z, label_suffix=" (decrease)")
             
         if oth_x.size > 0:
-            ax.scatter(oth_x, oth_z, s = 1, label="No FOSD relation")   
-    ax.set_title(f"{t_to}-period after change rate (compare t={t_from} → {t_to}), n={team_size}, supp(G)={grid_size}")
+            ax.scatter(oth_x, oth_z, s = 1, label="No FOSD order")   
+    ax.set_title(f"{t_to}-period change (t={t_from} → {t_to}), n={team_size}, supp(G)={grid_size}")
 
 
     

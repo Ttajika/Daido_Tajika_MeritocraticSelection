@@ -52,7 +52,7 @@ def X1_matrix(A, params):
     e_m = eM_vec(A, params)         # (k,)
     ES = e_s[np.newaxis, :]  # shape (1,k) -> subordinate type j
     EM = e_m[:, np.newaxis]  # shape (k,1) -> manager type i
-    return PHI(ES, EM, params) + util(ES, params)  # broadcastingで (k,k)
+    return PHI(ES, EM, params) + util(ES, params)  # broadcasting produces (k,k)
 
 def Total_profit(P, hP, A, params):
     P = np.asarray(P)
@@ -66,8 +66,8 @@ def Total_profit(P, hP, A, params):
 def compute_Gamma_matrix(P, A, n, params,
                          n_grid=1000, L=6):
     """
-    manager type = A[i] （行）
-    subordinate type = A[j] （列）の遷移行列 Gamma_mat[i,j]
+    manager type = A[i] (row)
+    subordinate type = A[j] (column); returns transition matrix Gamma_mat[i,j]
     """
     P = np.asarray(P)
     A = np.asarray(A)
@@ -80,10 +80,10 @@ def compute_Gamma_matrix(P, A, n, params,
     Gamma_mat = np.zeros((k, k))
 
     for m in range(k):  # manager bias = A[m]
-        x_m = X1_mat[m, :]          # subordinateごとのX1
+        x_m = X1_mat[m, :]          # X1 for each subordinate type
         x_min, x_max = x_m.min(), x_m.max()
 
-        # π のグリッドを作る（±Lσ をカバー）
+        # Build a pi grid that covers ±Lσ
         pi_min = theta - L*sigma + x_min
         pi_max = theta + L*sigma + x_max
         pi_grid = np.linspace(pi_min, pi_max, n_grid)
@@ -97,11 +97,11 @@ def compute_Gamma_matrix(P, A, n, params,
         # H(π) = Σ_j P_j F(π − X1_mj)
         H_vals = (P * cdf).sum(axis=1)                 # shape (n_grid,)
 
-        # 各タイプ j についての integrand: P[j]*f * n * H^{n-1}
+        # Integrand for each type j: P[j] * f * n * H^{n-1}
         integrand = pdf * P   # broadcasting → (n_grid, k)
         integrand *= n * (H_vals**(n-1))[:, None]
 
-        # 台形公式で積分して Gamma_mat[m, :]
+        # Integrate with the trapezoid rule to obtain Gamma_mat[m, :]
         Gamma_mat[m, :] = np.trapezoid(integrand, pi_grid, axis=0)
 
     row_sums = Gamma_mat.sum(axis=1, keepdims=True)
@@ -120,9 +120,9 @@ def updated_distribution(hP, Gamma_mat):
 
 def fosd_relation(P, Q):
     """
-    - 戻り値  1 : Q が P を一次確率支配（＝バイアス「増加」側）
-    - 戻り値 -1 : P が Q を一次確率支配（＝バイアス「減少」側）
-    - 戻り値  0 : どちらも支配しない
+    - return value  1 : Q first-order stochastically dominates P (bias increases)
+    - return value -1 : P first-order stochastically dominates Q (bias decreases)
+    - return value  0 : neither dominates
     """
     P = np.asarray(P, dtype=float)
     Q = np.asarray(Q, dtype=float)
@@ -144,15 +144,15 @@ def fosd_relation(P, Q):
     return z
 
 # ============================
-#  シミュレーション関数
+#  Simulation functions
 # ============================
 
 def simulate_one_path(num_periods, team_size, grid_size, params):
     """
-    1 本の OLG 経路を生成:
-      - 下位分布 G と supp(G)=A をランダムに生成
-      - G からスタートして managerial bias 分布を num_periods 期分進める
-    戻り値:
+    Generate one OLG path:
+      - Randomly create subordinate distribution G with supp(G)=A
+      - Start from G and evolve the managerial bias distribution for num_periods steps
+    Returns:
       A: shape (K,)
       sub_dist: shape (K,)
       manager_dists: shape (num_periods+1, K)
@@ -161,11 +161,11 @@ def simulate_one_path(num_periods, team_size, grid_size, params):
     K = grid_size
     max_alpha = params["max_alpha"]
     min_alpha = params["min_alpha"]
-    #Supp(G) の生成
+    # Generate the support of G
     if params["method_supp"] == "uniformly drawn grid":
         A = np.linspace(min_alpha, max_alpha, K)
     else:  # randomly drawn grid
-        A = np.sort((max_alpha-min_alpha)*np.random.rand(K)+min_alpha)  # 0 除けるために少しずらす
+        A = np.sort((max_alpha-min_alpha)*np.random.rand(K)+min_alpha)  # shift slightly to avoid zeros
 
     P1pr = [random.random() for j in range(K)]
     sP1 = sum(P1pr)
@@ -179,14 +179,14 @@ def simulate_one_path(num_periods, team_size, grid_size, params):
             n=team_size,
             params=params,
         )
-    # 初期 manager 分布は G と同じにしておく
+    # Initialize the manager distribution identical to G
     manager_dist = sub_dist.copy()
 
     for t in range(num_periods + 1):
         manager_dists.append(manager_dist)
         performances.append(Total_profit(sub_dist, manager_dist, A, params))
 
-        # 次期の manager 分布を計算（最後の期では使われないがそのまま更新）
+        # Update the next-period manager distribution (computed even for the final loop)
 
         manager_dist = updated_distribution(manager_dist, Gamma_mat)
 
@@ -195,8 +195,8 @@ def simulate_one_path(num_periods, team_size, grid_size, params):
 
 def run_simulations(num_sims, num_periods, team_size, grid_size, params):
     """
-    複数本の経路をシミュレーションし、結果を list で返す。
-    各要素は dict:
+    Simulate multiple paths and return the results as a list.
+    Each element is a dict:
       {"A": A, "G": sub_dist, "managers": manager_dists, "perf": performances}
     """
     results = []
@@ -229,9 +229,8 @@ def run_simulations(num_sims, num_periods, team_size, grid_size, params):
 
 def compute_scatter_data(results, t_from, t_to):
     """
-    指定した 2 期 t_from, t_to について、
-    平均バイアスとパフォーマンスの変化を計算し、
-    FOSD の向きごとにグループ分けして返す。
+    For periods t_from and t_to, compute the changes in mean bias and performance
+    and group results by the direction of the FOSD relation.
     """
     inc_x, inc_y, inc_z = [], [], []
     dec_x, dec_y, dec_z = [], [], []
@@ -245,17 +244,17 @@ def compute_scatter_data(results, t_from, t_to):
         P_before = managers[t_from]
         P_after = managers[t_to]
 
-        # 平均バイアス
+        # Mean bias
         mean_before = float(P_before @ A)
         mean_after = float(P_after @ A)
         delta_mean = (mean_after - mean_before) / mean_before if mean_before != 0 else 0.0
 
-        #バイアスの分散
+        # Variance of bias
         var_before = float(P_before @ (A - mean_before) ** 2)
         var_after = float(P_after @ (A - mean_after) ** 2)
         delta_var = (var_after - var_before) / var_before if var_before != 0 else 0.0
 
-        # パフォーマンス
+        # Performance
         perf_before = float(perf[t_from])
         perf_after = float(perf[t_to])
         delta_perf = (perf_after - perf_before) / perf_before if perf_before != 0 else 0.0
@@ -284,7 +283,7 @@ def compute_scatter_data(results, t_from, t_to):
 
 
 def add_regression(ax, xs, ys, label_suffix=""):
-    """単純な一次回帰直線を図に追加（点が2個以上あるときだけ）"""
+    """Add a simple linear regression line if at least two points exist."""
     if xs.size < 2:
         return
     coeffs = np.polyfit(xs, ys, 1)
@@ -303,7 +302,7 @@ st.markdown(
     r'''Use the controls below to tune the model, run simulations, and visualize how shifts in managerial bias distributions shape overall organizational performance.'''
 )
 
-# ---- 高度なパラメータ（トグルで隠す） ----
+# ---- Advanced parameters (hidden toggle) ----
 with st.expander("Model Parameters", expanded=False):
     st.write("Effort-performance functions")
     s1 = r"""v(e_s, e_m) = -\eta_s e_s^2/2 + \eta_{ms} (1 - e_s)(1 - e_m) - \eta_m e_m^2/2"""
@@ -335,7 +334,7 @@ with st.expander("Model Parameters", expanded=False):
         max_alpha = st.number_input("Max alpha", min_value=0.01, max_value=1.0, value=1.0, step=0.01)
     with colf:
         min_alpha = st.number_input("Min alpha", min_value=0.0, max_value=max_alpha, value=0.01, step=0.01)
-    # 将来拡張しやすいよう dict にまとめて渡す
+    # Bundle parameters into a dict for easy future extensions
     params = {
         "γs": γs,
         "γm": γm,
@@ -348,7 +347,7 @@ with st.expander("Model Parameters", expanded=False):
         "method_supp": method_supp,
     }
 
-# ---- メイン設定（常に見える） ----
+# ---- Main settings (always visible) ----
 st.subheader("Core Simulation Settings")
 
 col1, col2, col3, col4 = st.columns(4)
@@ -379,7 +378,7 @@ if run_button:
     )
     st.session_state.num_periods = num_periods
 
-# ---- 結果の可視化 ----
+# ---- Visualization of results ----
 if st.session_state.results is not None:
     st.subheader("Two-Period Change Visualization")
 
@@ -398,7 +397,7 @@ if st.session_state.results is not None:
 
     groups = compute_scatter_data(st.session_state.results, t_from, t_to)
 
-    # 件数の表示
+    # Display counts per group
     st.write(
         f"FOSD (bias rising): {groups['inc'][0].size}, "
         f"FOSD (bias falling): {groups['dec'][0].size}, "

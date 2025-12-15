@@ -12,6 +12,15 @@ This repository contains the simulation code underlying the numerical results in
 
 
 ## Interactive application
+
+This repository includes an interactive Streamlit application for exploring the model dynamics.
+
+To run the app locally, install the required packages and execute:
+
+```bash
+pip install -r merito_app/requirements.txt
+streamlit run merito_app/app.py
+```
 An interactive web application based on the same codebase is available at:
 https://daido-tajika-meritocraticselection.onrender.com/
 
